@@ -2,7 +2,6 @@
 #include <map>
 #include <fstream>
 #include <vector>
-#include <math.h>
 #include <chrono>
 
 using namespace std;
@@ -114,6 +113,10 @@ public:
         }
     }
 
+    string getCode(){
+        return this->code;
+    }
+
     void printAirport(string type){
         if (type == "DEL"){
             cout << endl;
@@ -166,8 +169,8 @@ public:
             cout << "Total Flights Cancelled: " << this->flightsCancelled << endl;
             cout << "Total Flights Diverted: " << this->flightsDiverted << endl;
             cout << "Total Flights On Time: " << this->flightsOnTime << endl;
-            cout << "Percent of Flights Delayed: " << (100 * (this->flightsDel/this->flightsTot)) << "%" << endl;
-            cout << "Percent of Flights On Time: " << (100 * (this->flightsOnTime/this->flightsTot)) << "%" << endl;
+            cout << "Percent of Flights Delayed: " << (100 * ((double)this->flightsDel/(double)this->flightsTot)) << "%" << endl;
+            cout << "Percent of Flights On Time: " << (100 * ((double)this->flightsOnTime/(double)this->flightsTot)) << "%" << endl;
         }
     }
 };
@@ -289,10 +292,23 @@ private:
 public:
     map<int, Airport> insertToMap(map<int, Airport> airportMap, Airport flying, string type){
         bool combined = false;
+        auto iterator = airportMap.begin();
         for (auto iter = airportMap.begin(); iter != airportMap.end(); iter++){
             if (iter->second.getName() == flying.getName()){
-                airportMap[iter->first].combiner(flying);
                 combined = true;
+                iterator = iter;
+                break;
+            }
+        }
+        if (combined == true){
+            airportMap[iterator->first].combiner(flying);
+            Airport temp = iterator->second;
+            airportMap.erase(iterator->first);
+            if (type == "DEL"){
+                airportMap[temp.getDelay()] = temp;
+            }
+            else{
+                airportMap[temp.getMin()] = temp;
             }
         }
         if (combined == false){
@@ -734,6 +750,7 @@ int main() {
                 map<int, Airport> mapAir = airportMapMin.getMap();
                 auto iter = mapAir.end();
                 iter--;
+                cout << iter->first << endl;
                 iter->second.printAirport("MIN");
                 auto end = chrono::steady_clock::now();
                 cout << endl;
@@ -783,14 +800,92 @@ int main() {
                 cout << "YOU MUST SELECT A DATA STRUCTURE FIRST" << endl;
                 continue;
             }
-            else if (dataStructure == 1){
-
+            cout << endl << "WHAT AIRPORT DO YOU WANT TO SEARCH FOR? (ENTER AIRPORT CODE SUCH AS \"ABC\" FROM LIST OF AIRPORTS):" << endl;
+            string input;
+            cin >> input;
+            while (input.size() != 3 || input[0] < 'A' || input[0] > 'Z' || input[1] < 'A' || input[1] > 'Z' || input[2] < 'A' || input[2] > 'Z'){
+                cout << endl << "INVALID INPUT! TRY AGAIN:" << endl;
+                cin >> input;
+            }
+            if (dataStructure == 1){
+                auto start = chrono::steady_clock::now();
+                map<int, Airport> mapAir = airportMapDel.getMap();
+                bool found = false;
+                for (auto iter = mapAir.begin(); iter != mapAir.end(); iter++){
+                    if (input == iter->second.getCode()){
+                        mapAir[iter->first].printAirport("AIR");
+                        found = true;
+                    }
+                }
+                if (found == false){
+                    cout << "AIRPORT NOT FOUND! PLEASE TRY AGAIN" << endl;
+                }
+                auto end = chrono::steady_clock::now();
+                cout << endl;
+                cout << "ELAPSED TIME OF FUNCTION: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " millisecond(s)" << endl;
             }
             else if (dataStructure == 2){
-
+                auto start = chrono::steady_clock::now();
+                Airport* arrHeap = airportHeapDel.getHeap();
+                bool found = false;
+                for (int i = 0; i < 29; i++){
+                    if (input == arrHeap[i].getCode()){
+                        arrHeap[i].printAirport("AIR");
+                        found = true;
+                    }
+                }
+                if (found == false){
+                    cout << "AIRPORT NOT FOUND! PLEASE TRY AGAIN" << endl;
+                }
+                auto end = chrono::steady_clock::now();
+                cout << endl;
+                cout << "ELAPSED TIME OF FUNCTION: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " millisecond(s)" << endl;
             }
             else if (dataStructure == 3){
-
+                auto start1 = chrono::steady_clock::now();
+                map<int, Airport> mapAir = airportMapDel.getMap();
+                bool found1 = false;
+                for (auto iter = mapAir.begin(); iter != mapAir.end(); iter++){
+                    if (input == iter->second.getCode()){
+                        mapAir[iter->first].printAirport("AIR");
+                        found1 = true;
+                    }
+                }
+                if (found1 == false){
+                    cout << "AIRPORT NOT FOUND! PLEASE TRY AGAIN" << endl;
+                }
+                auto end1 = chrono::steady_clock::now();
+                cout << endl;
+                int time1 = chrono::duration_cast<chrono::milliseconds>(end1 - start1).count();
+                cout << "ELAPSED TIME OF FUNCTION: " << time1 << " millisecond(s)" << endl;
+                cout << endl;
+                auto start2 = chrono::steady_clock::now();
+                Airport* arrHeap = airportHeapDel.getHeap();
+                bool found2 = false;
+                for (int i = 0; i < 29; i++){
+                    if (input == arrHeap[i].getCode()){
+                        arrHeap[i].printAirport("AIR");
+                        found2 = true;
+                    }
+                }
+                if (found2 == false){
+                    cout << "AIRPORT NOT FOUND! PLEASE TRY AGAIN" << endl;
+                }
+                auto end2 = chrono::steady_clock::now();
+                cout << endl;
+                int time2 = chrono::duration_cast<chrono::milliseconds>(end2 - start2).count();
+                cout << "ELAPSED TIME OF FUNCTION: " << time2 << " millisecond(s)" << endl;
+                cout << endl;
+                cout << "THE MAP TOOK " + to_string(time1) + " MILLISECOND(S) AND THE MIN-HEAP TOOK " + to_string(time2) + " MILLISECOND(S)" << endl;
+                if (time1 > time2){
+                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " SECONDS" << endl;
+                }
+                else if (time1 < time2){
+                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " SECONDS" << endl;
+                }
+                else {
+                    cout << "THE MAP AND MIN-HEAP ARE EQUALLY FAST" << endl;
+                }
             }
         }
     }
