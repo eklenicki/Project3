@@ -177,8 +177,18 @@ public:
 
 class minHeap{
 private:
-    Airport heap[29];
+    Airport* heap;
+    int size;
 public:
+    minHeap(int size){
+        this->heap = new Airport[size];
+        this->size = size;
+    }
+
+    int getSize(){
+        return this->size;
+    }
+
     Airport* rearrangeHeap(Airport heap[], int size, int index, string type){
         int leftIndex = (index * 2) + 1;
         int rightIndex = (index * 2) + 2;
@@ -276,7 +286,7 @@ public:
     }
 
     void setHeap(Airport heapIn[]){
-        for (int i = 0; i < 29; i++){
+        for (int i = 0; i < size; i++){
             this->heap[i] = heapIn[i];
         }
     }
@@ -339,10 +349,16 @@ airportMap readFileMap(string type){
     string minDelayedCarrier, minDelayedLateAircraft, minDelayedNAS, minDelayedSecurity, minDelayedTotal, minDelayedWeather;
     ifstream file;
     file.open("airlines.csv");
+    int numLines = 0;
     if (file.is_open()){
         string line;
+        while (getline(file, line)){
+            numLines++;
+        }
+        file.clear();
+        file.seekg(0);
         getline(file, line, '\n');
-        for (int i = 0; i < 4408; i++){
+        for (int i = 0; i < numLines-1; i++){
             getline(file, line, '"');
             getline(file, airportCode,'"');
             getline(file, line, '"');
@@ -399,17 +415,25 @@ airportMap readFileMap(string type){
 }
 
 minHeap readFileHeap(string type){
-    minHeap heap;
     string airportCode, airportName, date, monthName, carriers;
     string monthNum, year, delaysCarriers, delaysLateAircraft, delaysNAS, delaysSecurity, delaysWeather;
     string totalCarriers, flightsCancelled, flightsDelayed, flightsDiverted, flightsOnTime, flightsTotal;
     string minDelayedCarrier, minDelayedLateAircraft, minDelayedNAS, minDelayedSecurity, minDelayedTotal, minDelayedWeather;
     ifstream file;
     file.open("airlines.csv");
+    int numLines = 0;
     if (file.is_open()){
         string line;
+        while (getline(file, line)){
+            numLines++;
+        }
+        file.clear();
+        file.seekg(0);
         getline(file, line, '\n');
-        for (int i = 0; i < 4408; i++){
+        int numMonths = 152;
+        int size = numLines/numMonths;
+        minHeap heap(size);
+        for (int i = 0; i < numLines-1; i++){
             getline(file, line, '"');
             getline(file, airportCode,'"');
             getline(file, line, '"');
@@ -459,10 +483,10 @@ minHeap readFileHeap(string type){
             getline(file, line,'"');
             getline(file, minDelayedWeather,'"');
             getline(file,line, '\n');
-            heap.setHeap(heap.insertToHeap(heap.getHeap(), 29, Airport(airportCode, airportName, stoi(delaysCarriers), stoi(delaysLateAircraft), stoi(delaysNAS), stoi(delaysSecurity), stoi(delaysWeather), carriers, stoi(totalCarriers), stoi(flightsCancelled), stoi(flightsDelayed), stoi(flightsDiverted), stoi(flightsOnTime), stoi(flightsTotal), stoi(minDelayedCarrier), stoi(minDelayedLateAircraft), stoi(minDelayedNAS), stoi(minDelayedSecurity), stoi(minDelayedTotal), stoi(minDelayedWeather)), type));
+            heap.setHeap(heap.insertToHeap(heap.getHeap(), heap.getSize(), Airport(airportCode, airportName, stoi(delaysCarriers), stoi(delaysLateAircraft), stoi(delaysNAS), stoi(delaysSecurity), stoi(delaysWeather), carriers, stoi(totalCarriers), stoi(flightsCancelled), stoi(flightsDelayed), stoi(flightsDiverted), stoi(flightsOnTime), stoi(flightsTotal), stoi(minDelayedCarrier), stoi(minDelayedLateAircraft), stoi(minDelayedNAS), stoi(minDelayedSecurity), stoi(minDelayedTotal), stoi(minDelayedWeather)), type));
         }
+        return heap;
     }
-    return heap;
 }
 
 void printMenu() {
@@ -544,7 +568,7 @@ int main() {
                 cout << endl;
                 auto start = chrono::steady_clock::now();
                 Airport* arrHeap = airportHeapDel.getHeap();
-                for (int i = 0; i < 29; i++){
+                for (int i = 0; i < airportHeapDel.getSize(); i++){
                     cout << arrHeap[i].getName() << endl;
                 }
                 auto end = chrono::steady_clock::now();
@@ -565,7 +589,7 @@ int main() {
                 cout << endl;
                 auto start2 = chrono::steady_clock::now();
                 Airport* arrHeap = airportHeapDel.getHeap();
-                for (int i = 0; i < 29; i++){
+                for (int i = 0; i < airportHeapDel.getSize(); i++){
                     cout << arrHeap[i].getName() << endl;
                 }
                 auto end2 = chrono::steady_clock::now();
@@ -575,10 +599,10 @@ int main() {
                 cout << endl;
                 cout << "THE MAP TOOK " + to_string(time1) + " MILLISECOND(S) AND THE MIN-HEAP TOOK " + to_string(time2) + " MILLISECOND(S)" << endl;
                 if (time1 > time2){
-                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " SECONDS" << endl;
+                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " MILLISECOND(S)" << endl;
                 }
                 else if (time1 < time2){
-                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " SECONDS" << endl;
+                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " MILLISECOND(S)" << endl;
                 }
                 else {
                     cout << "THE MAP AND MIN-HEAP ARE EQUALLY FAST" << endl;
@@ -625,10 +649,10 @@ int main() {
                 cout << endl;
                 cout << "THE MAP TOOK " + to_string(time1) + " MILLISECOND(S) AND THE MIN-HEAP TOOK " + to_string(time2) + " MILLISECOND(S)" << endl;
                 if (time1 > time2){
-                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " SECONDS" << endl;
+                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " MILLISECOND(S)" << endl;
                 }
                 else if (time1 < time2){
-                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " SECONDS" << endl;
+                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " MILLISECOND(S)" << endl;
                 }
                 else {
                     cout << "THE MAP AND MIN-HEAP ARE EQUALLY FAST" << endl;
@@ -653,7 +677,7 @@ int main() {
             }
             else if (dataStructure == 2){
                 auto start = chrono::steady_clock::now();
-                Airport maxAir = airportHeapDel.getMax(airportHeapDel.getHeap(), 29, "DEL");
+                Airport maxAir = airportHeapDel.getMax(airportHeapDel.getHeap(), airportHeapDel.getSize(), "DEL");
                 maxAir.printAirport("DEL");
                 auto end = chrono::steady_clock::now();
                 cout << endl;
@@ -670,7 +694,7 @@ int main() {
                 int time1 = chrono::duration_cast<chrono::milliseconds>(end1 - start1).count();
                 cout << "ELAPSED TIME OF FUNCTION: " << time1 << " millisecond(s)" << endl;
                 auto start2 = chrono::steady_clock::now();
-                Airport maxAir = airportHeapDel.getMax(airportHeapDel.getHeap(), 29, "DEL");
+                Airport maxAir = airportHeapDel.getMax(airportHeapDel.getHeap(), airportHeapDel.getSize(), "DEL");
                 maxAir.printAirport("DEL");
                 auto end2 = chrono::steady_clock::now();
                 cout << endl;
@@ -679,10 +703,10 @@ int main() {
                 cout << endl;
                 cout << "THE MAP TOOK " + to_string(time1) + " MILLISECOND(S) AND THE MIN-HEAP TOOK " + to_string(time2) + " MILLISECOND(S)" << endl;
                 if (time1 > time2){
-                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " SECONDS" << endl;
+                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " MILLISECOND(S)" << endl;
                 }
                 else if (time1 < time2){
-                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " SECONDS" << endl;
+                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " MILLISECOND(S)" << endl;
                 }
                 else {
                     cout << "THE MAP AND MIN-HEAP ARE EQUALLY FAST" << endl;
@@ -729,10 +753,10 @@ int main() {
                 cout << endl;
                 cout << "THE MAP TOOK " + to_string(time1) + " MILLISECOND(S) AND THE MIN-HEAP TOOK " + to_string(time2) + " MILLISECOND(S)" << endl;
                 if (time1 > time2){
-                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " SECONDS" << endl;
+                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " MILLISECOND(S)" << endl;
                 }
                 else if (time1 < time2){
-                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " SECONDS" << endl;
+                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " MILLISECOND(S)" << endl;
                 }
                 else {
                     cout << "THE MAP AND MIN-HEAP ARE EQUALLY FAST" << endl;
@@ -758,7 +782,7 @@ int main() {
             }
             else if (dataStructure == 2){
                 auto start = chrono::steady_clock::now();
-                Airport maxAir = airportHeapMin.getMax(airportHeapMin.getHeap(), 29, "MIN");
+                Airport maxAir = airportHeapMin.getMax(airportHeapMin.getHeap(), airportHeapMin.getSize(), "MIN");
                 maxAir.printAirport("MIN");
                 auto end = chrono::steady_clock::now();
                 cout << endl;
@@ -775,7 +799,7 @@ int main() {
                 int time1 = chrono::duration_cast<chrono::milliseconds>(end1 - start1).count();
                 cout << "ELAPSED TIME OF FUNCTION: " << time1 << " millisecond(s)" << endl;
                 auto start2 = chrono::steady_clock::now();
-                Airport maxAir = airportHeapMin.getMax(airportHeapMin.getHeap(), 29, "MIN");
+                Airport maxAir = airportHeapMin.getMax(airportHeapMin.getHeap(), airportHeapMin.getSize(), "MIN");
                 maxAir.printAirport("MIN");
                 auto end2 = chrono::steady_clock::now();
                 cout << endl;
@@ -784,10 +808,10 @@ int main() {
                 cout << endl;
                 cout << "THE MAP TOOK " + to_string(time1) + " MILLISECOND(S) AND THE MIN-HEAP TOOK " + to_string(time2) + " MILLISECOND(S)" << endl;
                 if (time1 > time2){
-                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " SECONDS" << endl;
+                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " MILLISECOND(S)" << endl;
                 }
                 else if (time1 < time2){
-                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " SECONDS" << endl;
+                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " MILLISECOND(S)" << endl;
                 }
                 else {
                     cout << "THE MAP AND MIN-HEAP ARE EQUALLY FAST" << endl;
@@ -828,7 +852,7 @@ int main() {
                 auto start = chrono::steady_clock::now();
                 Airport* arrHeap = airportHeapDel.getHeap();
                 bool found = false;
-                for (int i = 0; i < 29; i++){
+                for (int i = 0; i < airportHeapDel.getSize(); i++){
                     if (input == arrHeap[i].getCode()){
                         arrHeap[i].printAirport("AIR");
                         found = true;
@@ -858,11 +882,10 @@ int main() {
                 cout << endl;
                 int time1 = chrono::duration_cast<chrono::milliseconds>(end1 - start1).count();
                 cout << "ELAPSED TIME OF FUNCTION: " << time1 << " millisecond(s)" << endl;
-                cout << endl;
                 auto start2 = chrono::steady_clock::now();
                 Airport* arrHeap = airportHeapDel.getHeap();
                 bool found2 = false;
-                for (int i = 0; i < 29; i++){
+                for (int i = 0; i < airportHeapDel.getSize(); i++){
                     if (input == arrHeap[i].getCode()){
                         arrHeap[i].printAirport("AIR");
                         found2 = true;
@@ -878,10 +901,10 @@ int main() {
                 cout << endl;
                 cout << "THE MAP TOOK " + to_string(time1) + " MILLISECOND(S) AND THE MIN-HEAP TOOK " + to_string(time2) + " MILLISECOND(S)" << endl;
                 if (time1 > time2){
-                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " SECONDS" << endl;
+                    cout << "THE MIN-HEAP WAS FASTER BY " << time1-time2 << " MILLISECOND(S)" << endl;
                 }
                 else if (time1 < time2){
-                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " SECONDS" << endl;
+                    cout << "THE MAP WAS FASTER BY " << time2-time1 << " MILLISECOND(S)" << endl;
                 }
                 else {
                     cout << "THE MAP AND MIN-HEAP ARE EQUALLY FAST" << endl;
